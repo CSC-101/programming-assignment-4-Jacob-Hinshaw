@@ -47,13 +47,67 @@ def filter_gt(counties: list[CountyDemographics], field: str, number: float):
         except (KeyError, AttributeError):
             return None
 
-    # Filter the counties based on the resolved field value
     new = [county for county in counties if (val := get_field_value(county)) is not None and val > number]
     print(f"Filter: {field} gt {number} ({len(new)} entries)")
     return new
 
+def filter_lt(counties: list[CountyDemographics], field: str, number: float):
+    #new = [county for county in counties if county.field > number]
+    field_parts = field.split('.')
 
+    def get_field_value(county: CountyDemographics):
+        """Retrieve the value of the specified field from a CountyDemographics object."""
+        value = county
+        try:
+            for part in field_parts:
+                if isinstance(value, dict):
+                    value = value[part]
+                else:
+                    value = getattr(value, part)
+            return value
+        except (KeyError, AttributeError):
+            return None
 
-county_list = filter_gt(county_list, "Education.High School or Higher", 83)
+    # Filter the counties based on the resolved field value
+    new = [county for county in counties if (val := get_field_value(county)) is not None and val < number]
+    print(f"Filter: {field} lt {number} ({len(new)} entries)")
+    return new
+
+def population_total(counties: list[CountyDemographics]):
+    pop = 0
+    for county in counties:
+        pop += county.population.get("2014 Population", 0)
+    print(f"2014 population: {pop}")
+    return pop
+
+def population_field(counties: list[CountyDemographics], field: str):
+    field_parts = field.split('.')
+    pop = 0
+    pop_2014 = 0
+    for county in counties:
+        pop_2014 += county.population.get("2014 Population", 0)
+    def get_field_value(county: CountyDemographics):
+        """Retrieve the value of the specified field from a CountyDemographics object."""
+        value = county
+        try:
+            for part in field_parts:
+                if isinstance(value, dict):
+                    value = value.get(part)
+                else:
+                    value = getattr(value, part)
+            return value
+        except (KeyError, AttributeError):
+            return 0
+
+    for county in counties:
+        value = get_field_value(county)
+        if isinstance(value, (int, float)):
+            pop += value
+    print(f"2014 {field} population: {pop * pop_2014}")
+
+#population_field(reduced_data, "ethnicities.Black Alone")
+#population_total(reduced_data)
+#county_list = filter_lt(reduced_data, "education.High School or Higher", 83)
+#county_list = filter_gt(reduced_data, "education.High School or Higher", 83)
 #county_list = filter_state(county_list, "AR")
-display(county_list)
+#display(county_list)
