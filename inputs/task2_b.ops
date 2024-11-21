@@ -1,2 +1,2 @@
-filter-gt:Education.Bachelor's Degree or Higher:40
-percent:Income.Persons Below Poverty Level
+filter-gt:education.Bachelor's Degree or Higher:40
+percent:income.Persons Below Poverty Level
